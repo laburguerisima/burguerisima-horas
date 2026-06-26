@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>La Burguerísima · Horas Extra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fff; color: #111; font-size: 14px; min-height: 100vh; }
+
+.header { display: flex; align-items: center; justify-content: space-between; padding: 12px 28px; border-bottom: 1.5px solid #EBEBEB; position: sticky; top: 0; background: #fff; z-index: 50; }
+.logo-area { display: flex; align-items: center; gap: 10px; }
+.logo-circle { width: 34px; height: 34px; background: #E8453C; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: #fff; flex-shrink: 0; }
+.header-title { font-size: 14px; font-weight: 700; }
+.header-sub { font-size: 11px; color: #999; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.sync-txt { font-size: 11px; color: #999; }
+.sync-txt.ok { color: #2E7D32; }
+.sync-txt.err { color: #C0392B; }
+.btn-save { background: #E8453C; color: #fff; border: none; padding: 8px 18px; border-radius: 6px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.btn-save:hover { background: #c93530; }
+.btn-save:disabled { background: #ddd; cursor: not-allowed; }
+
+.tabs { display: flex; border-bottom: 1.5px solid #EBEBEB; padding: 0 28px; }
+.tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #999; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; transition: color 0.15s; user-select: none; }
+.tab:hover { color: #555; }
+.tab.active { color: #E8453C; border-bottom-color: #E8453C; }
+
+.panel { display: none; padding: 22px 28px 60px; max-width: 1200px; }
+.panel.active { display: block; }
+
+.filter-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 12px 16px; background: #FAFAFA; border: 1px solid #EBEBEB; border-radius: 8px; margin-bottom: 20px; }
+.fl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #AAA; white-space: nowrap; }
+.f-sel, .f-inp { border: 1px solid #E0E0E0; border-radius: 5px; padding: 6px 10px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; background: #fff; outline: none; color: #111; }
+.f-sel:focus, .f-inp:focus { border-color: #E8453C; }
+.f-inp { width: 58px; text-align: center; }
+.f-sep { color: #CCC; }
+.f-clear { font-size: 12px; font-weight: 600; color: #CCC; background: none; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: color 0.15s; }
+.f-clear:hover { color: #E8453C; }
+.f-div { width: 1px; height: 18px; background: #E0E0E0; }
+
+.cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 22px; }
+@media(max-width:680px){ .cards { grid-template-columns: 1fr 1fr; } }
+.card { border: 1px solid #EBEBEB; border-radius: 8px; padding: 14px 16px; }
+.card-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-bottom: 6px; }
+.card-val { font-size: 24px; font-weight: 700; color: #111; line-height: 1; }
+.card-val.g { color: #2E7D32; }
+.card-val.r { color: #C0392B; }
+.card-sub { font-size: 11px; color: #CCC; margin-top: 4px; }
+
+.tbl-wrap { border: 1px solid #EBEBEB; border-radius: 8px; overflow-x: auto; margin-bottom: 12px; }
+table { width: 100%; border-collapse: collapse; min-width: 750px; }
+thead tr { background: #FAFAFA; border-bottom: 1.5px solid #EBEBEB; }
+thead th { padding: 9px 12px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #AAA; white-space: nowrap; }
+tbody tr { border-bottom: 1px solid #F5F5F5; transition: background 0.1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #FAFAFA; }
+
+.td-inp { border: 1px solid transparent; border-radius: 5px; padding: 5px 8px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: #111; background: transparent; outline: none; width: 100%; transition: all 0.15s; }
+.td-inp:hover { border-color: #E0E0E0; background: #fff; }
+.td-inp:focus { border-color: #E8453C; background: #fff; }
+.td-inp[type="number"] { width: 60px; text-align: center; }
+.td-inp:disabled { color: #CCC; }
+.td-sel { border: 1px solid transparent; border-radius: 5px; padding: 5px 22px 5px 8px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: #111; background: transparent; outline: none; appearance: none; cursor: pointer; width: 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23ccc'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 6px center; transition: all 0.15s; }
+.td-sel:hover { border-color: #E0E0E0; background-color: #fff; }
+.td-sel:focus { border-color: #E8453C; background-color: #fff; }
+.td-sel:disabled { color: #CCC; }
+
+.badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+.b-extra { background: #E8F5E9; color: #2E7D32; }
+.b-retraso { background: #FFEBEE; color: #C0392B; }
+.b-ausente { background: #F5F5F5; color: #999; }
+.b-neutral { background: #F5F5F5; color: #BBB; }
+
+.chk-wrap { display: flex; align-items: center; gap: 6px; }
+.chk-wrap input { accent-color: #E8453C; width: 14px; height: 14px; cursor: pointer; }
+.chk-lbl { font-size: 11px; color: #BBB; }
+.chk-lbl.ok { color: #2E7D32; font-weight: 600; }
+
+.btn-del { background: none; border: none; color: #DDD; cursor: pointer; font-size: 16px; padding: 0 2px; transition: color 0.15s; line-height: 1; }
+.btn-del:hover { color: #E8453C; }
+.btn-add { display: flex; align-items: center; justify-content: center; gap: 6px; border: 1.5px dashed #E0E0E0; border-radius: 7px; padding: 10px; font-size: 12px; font-weight: 600; color: #CCC; cursor: pointer; background: transparent; width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s; margin-bottom: 0; }
+.btn-add:hover { border-color: #E8453C; color: #E8453C; background: #FFF8F8; }
+
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(14px); padding: 10px 22px; border-radius: 30px; font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok { background: #111; color: #fff; }
+.toast.err { background: #C0392B; color: #fff; }
+
+.overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 200; }
+.overlay.hidden { display: none; }
+.spinner { width: 30px; height: 30px; border: 3px solid #EEE; border-top-color: #E8453C; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.ov-txt { font-size: 13px; color: #999; font-weight: 600; }
+
+@media(max-width:600px){ .header { padding: 10px 14px; } .tabs { padding: 0 14px; } .panel { padding: 16px 14px 48px; } }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="ov-txt">Cargando registros...</div>
+</div>
+
+<div class="header">
+  <div class="logo-area">
+    <div class="logo-circle">B</div>
+    <div>
+      <div class="header-title">La Burguerísima</div>
+      <div class="header-sub">Registro de horas extra · Nómina</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="sync-txt" id="sync">Cargando...</span>
+    <button class="btn-save" id="btn-save" onclick="guardar()" disabled>💾 Guardar</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">Colina</div>
+  <div class="tab" onclick="switchTab(1)">Uribe</div>
+  <div class="tab" onclick="switchTab(2)">Calle 93</div>
+</div>
+
+<div id="p0" class="panel active"></div>
+<div id="p1" class="panel"></div>
+<div id="p2" class="panel"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const URL = 'https://script.google.com/macros/s/AKfycbzJx7drbzWn7wUAaId-MQOghY5ksn2CCs-cXi9MCdGU0p4O0zCXMDcQTlE7hzmiBv7I/exec';
+const SEDES = ['Colina','Uribe','Calle 93'];
+const CARGOS = ['Cajero','Parrillero','Auxiliar'];
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const VALOR = 13000;
+let activeTab = 0, rc = 0, pendiente = false;
+
+function fmt(n){ return '$'+Math.abs(Math.round(n)).toLocaleString('es-CO'); }
+function hoy(){ return new Date().toISOString().split('T')[0]; }
+function mesAct(){ const d=new Date(); return (d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getFullYear(); }
+
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+function sync(msg,cls=''){
+  const el=document.getElementById('sync');
+  el.textContent=msg; el.className='sync-txt '+cls;
+}
+function marcar(){
+  pendiente=true;
+  document.getElementById('btn-save').disabled=false;
+  sync('Cambios sin guardar');
+}
+
+function mesOpts(sel){
+  const now=new Date(); let h='';
+  for(let i=-6;i<=6;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+    const v=(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getFullYear();
+    const l=MESES[d.getMonth()]+' '+d.getFullYear();
+    h+=`<option value="${v}"${v===sel?' selected':''}>${l}</option>`;
+  }
+  return h;
+}
+
+function renderPanel(si, saved){
+  const panel=document.getElementById('p'+si);
+  const mes=saved?.mes||mesAct();
+  const desde=saved?.desde||'';
+  const hasta=saved?.hasta||'';
+  panel.innerHTML=`
+    <div class="filter-bar">
+      <span class="fl">Mes</span>
+      <select class="f-sel flt-mes" onchange="filtrar(${si});marcar()">${mesOpts(mes)}</select>
+      <div class="f-div"></div>
+      <span class="fl">Días</span>
+      <input class="f-inp flt-desde" type="number" min="1" max="31" placeholder="1" value="${desde}" oninput="filtrar(${si})" />
+      <span class="f-sep">—</span>
+      <input class="f-inp flt-hasta" type="number" min="1" max="31" placeholder="31" value="${hasta}" oninput="filtrar(${si})" />
+      <button class="f-clear" onclick="limpiar(${si})">Limpiar</button>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-lbl">H. Extra</div><div class="card-val g s-extra">0 h</div><div class="card-sub">Período filtrado</div></div>
+      <div class="card"><div class="card-lbl">H. Retraso</div><div class="card-val r s-retraso">0 h</div><div class="card-sub">Período filtrado</div></div>
+      <div class="card"><div class="card-lbl">A pagar</div><div class="card-val g s-pagar">$0</div><div class="card-sub">Extra × $13.000</div></div>
+      <div class="card"><div class="card-lbl">Neto final</div><div class="card-val s-neto">$0</div><div class="card-sub">Extra − retrasos</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:110px">Fecha</th>
+          <th style="min-width:130px">Empleado</th>
+          <th style="min-width:100px">Cargo</th>
+          <th style="width:78px;text-align:center">H. Extra</th>
+          <th style="width:88px;text-align:center">H. Retraso</th>
+          <th style="width:110px;text-align:center">Estado</th>
+          <th style="min-width:160px">Comentario</th>
+          <th style="width:130px">Aprobador</th>
+          <th style="width:30px"></th>
+        </tr></thead>
+        <tbody id="tb${si}"></tbody>
+      </table>
+    </div>
+    <button class="btn-add" onclick="addRow(${si})">+ Agregar registro</button>
+  `;
+  const tb=document.getElementById('tb'+si);
+  if(saved?.rows?.length){ saved.rows.forEach(r=>tb.appendChild(makeRow(si,r))); }
+  else { tb.appendChild(makeRow(si)); }
+  calcSum(si);
+}
+
+function makeRow(si,d){
+  rc++;
+  const tr=document.createElement('tr');
+  tr.dataset.si=si;
+  const absent=d?.absent==='1';
+  const dis=absent?'disabled':'';
+  const op=absent?'color:#CCC;':'';
+  tr.innerHTML=`
+    <td><input class="td-inp r-fecha" type="date" value="${d?.fecha||hoy()}" oninput="onChg(this)" /></td>
+    <td><input class="td-inp r-nombre" placeholder="Nombre" value="${d?.nombre||''}" oninput="onChg(this)" style="min-width:110px" /></td>
+    <td><select class="td-sel r-cargo" onchange="onChg(this)">${CARGOS.map(c=>`<option${d?.cargo===c?' selected':''}>${c}</option>`).join('')}</select></td>
+    <td style="text-align:center"><input class="td-inp r-extra" type="number" min="0" max="20" value="${d?.extra||0}" oninput="onChg(this)" ${dis} style="${op}" /></td>
+    <td style="text-align:center"><input class="td-inp r-retraso" type="number" min="0" max="20" value="${d?.retraso||0}" oninput="onChg(this)" ${dis} style="${op}" /></td>
+    <td style="text-align:center">
+      <span class="badge r-badge ${absent?'b-ausente':'b-neutral'}">${absent?'No trabajó':'—'}</span>
+      <input type="checkbox" title="notrabajo" ${absent?'checked':''} style="accent-color:#E8453C;margin-left:4px;cursor:pointer;vertical-align:middle" onchange="togAbs(this)" />
+    </td>
+    <td><input class="td-inp r-com" placeholder="Opcional" value="${d?.comentario||''}" oninput="marcar()" ${dis} style="${op}" /></td>
+    <td>
+      <div class="chk-wrap">
+        <input type="checkbox" class="r-apr" ${d?.aprobado?'checked':''} onchange="onChg(this)" ${dis} />
+        <span class="chk-lbl r-apr-lbl ${d?.aprobado?'ok':''}">${d?.aprobado?'Silvana M.':'Pendiente'}</span>
+      </div>
+    </td>
+    <td><button class="btn-del" onclick="delRow(this,${si})">×</button></td>
+  `;
+  if(d?.cargo) tr.querySelector('.r-cargo').value=d.cargo;
+  return tr;
+}
+
+function onChg(el){
+  const tr=el.closest('tr');
+  const si=parseInt(tr.dataset.si);
+  const extra=parseInt(tr.querySelector('.r-extra')?.value)||0;
+  const retraso=parseInt(tr.querySelector('.r-retraso')?.value)||0;
+  const absent=tr.querySelector('input[title="notrabajo"]')?.checked;
+  const badge=tr.querySelector('.r-badge');
+  if(!absent){
+    if(extra>0&&retraso===0){badge.textContent=`+${extra}h extra`;badge.className='badge r-badge b-extra';}
+    else if(retraso>0&&extra===0){badge.textContent=`-${retraso}h retraso`;badge.className='badge r-badge b-retraso';}
+    else if(extra>0&&retraso>0){badge.textContent=`+${extra}h/-${retraso}h`;badge.className='badge r-badge b-retraso';}
+    else{badge.textContent='—';badge.className='badge r-badge b-neutral';}
+  }
+  const cb=tr.querySelector('.r-apr');
+  const lbl=tr.querySelector('.r-apr-lbl');
+  if(cb&&lbl){lbl.textContent=cb.checked?'Silvana M.':'Pendiente';lbl.className='chk-lbl r-apr-lbl'+(cb.checked?' ok':'');}
+  calcSum(si); marcar();
+}
+
+function togAbs(cb){
+  const tr=cb.closest('tr');
+  const si=parseInt(tr.dataset.si);
+  const absent=cb.checked;
+  const badge=tr.querySelector('.r-badge');
+  tr.querySelectorAll('.r-extra,.r-retraso,.r-apr,.r-com').forEach(el=>{
+    el.disabled=absent; el.style.color=absent?'#CCC':'';
+  });
+  if(absent){tr.querySelector('.r-extra').value=0;tr.querySelector('.r-retraso').value=0;badge.textContent='No trabajó';badge.className='badge r-badge b-ausente';}
+  else{badge.textContent='—';badge.className='badge r-badge b-neutral';}
+  calcSum(si); marcar();
+}
+
+function delRow(btn,si){
+  const tb=document.getElementById('tb'+si);
+  btn.closest('tr').remove();
+  if(!tb.querySelector('tr')) tb.appendChild(makeRow(si));
+  calcSum(si); marcar();
+}
+function addRow(si){ document.getElementById('tb'+si).appendChild(makeRow(si)); marcar(); }
+
+function filtrar(si){
+  const panel=document.getElementById('p'+si);
+  const mes=panel.querySelector('.flt-mes')?.value||'';
+  const desde=parseInt(panel.querySelector('.flt-desde')?.value)||1;
+  const hasta=parseInt(panel.querySelector('.flt-hasta')?.value)||31;
+  document.getElementById('tb'+si).querySelectorAll('tr').forEach(tr=>{
+    const fecha=tr.querySelector('.r-fecha')?.value||'';
+    let show=true;
+    if(mes&&fecha){const[y,m]=fecha.split('-');show=(m+'-'+y)===mes;}
+    if(show&&fecha){const dia=parseInt(fecha.split('-')[2])||0;show=dia>=desde&&dia<=hasta;}
+    tr.style.display=show?'':'none';
+  });
+  calcSum(si);
+}
+function limpiar(si){
+  const p=document.getElementById('p'+si);
+  p.querySelector('.flt-desde').value='';
+  p.querySelector('.flt-hasta').value='';
+  filtrar(si);
+}
+
+function calcSum(si){
+  let e=0,r=0;
+  document.getElementById('tb'+si).querySelectorAll('tr').forEach(tr=>{
+    if(tr.style.display==='none') return;
+    if(tr.querySelector('input[title="notrabajo"]')?.checked) return;
+    e+=parseInt(tr.querySelector('.r-extra')?.value)||0;
+    r+=parseInt(tr.querySelector('.r-retraso')?.value)||0;
+  });
+  const neto=(e-r)*VALOR;
+  const p=document.getElementById('p'+si);
+  p.querySelector('.s-extra').textContent=e+' h';
+  p.querySelector('.s-retraso').textContent=r+' h';
+  p.querySelector('.s-pagar').textContent=fmt(e*VALOR);
+  const nel=p.querySelector('.s-neto');
+  nel.textContent=(neto>=0?'+':'-')+fmt(neto);
+  nel.className='card-val s-neto '+(neto>0?'g':neto<0?'r':'');
+}
+
+function getState(){
+  const s={};
+  SEDES.forEach((_,si)=>{
+    const p=document.getElementById('p'+si);
+    s[si]={
+      mes:p.querySelector('.flt-mes')?.value||'',
+      desde:p.querySelector('.flt-desde')?.value||'',
+      hasta:p.querySelector('.flt-hasta')?.value||'',
+      rows:[]
+    };
+    document.getElementById('tb'+si).querySelectorAll('tr').forEach(tr=>{
+      s[si].rows.push({
+        fecha:tr.querySelector('.r-fecha')?.value||'',
+        nombre:tr.querySelector('.r-nombre')?.value||'',
+        cargo:tr.querySelector('.r-cargo')?.value||'',
+        extra:tr.querySelector('.r-extra')?.value||'0',
+        retraso:tr.querySelector('.r-retraso')?.value||'0',
+        absent:tr.querySelector('input[title="notrabajo"]')?.checked?'1':'0',
+        comentario:tr.querySelector('.r-com')?.value||'',
+        aprobado:tr.querySelector('.r-apr')?.checked||false
+      });
+    });
+  });
+  return s;
+}
+
+// GUARDAR — usa iframe trick para evitar CORS con POST
+async function guardar(){
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true; btn.textContent='⏳ Guardando...';
+  sync('Guardando...');
+  try{
+    const data=encodeURIComponent(JSON.stringify(getState()));
+    const resp=await fetch(`${URL}?action=save&data=${data}`);
+    const json=await resp.json();
+    if(json.ok){
+      pendiente=false;
+      btn.textContent='💾 Guardar';
+      sync('Guardado · '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),'ok');
+      toast('✓ Guardado correctamente');
+    } else throw new Error(json.error||'Error');
+  }catch(e){
+    btn.disabled=false; btn.textContent='💾 Guardar';
+    sync('Error al guardar','err');
+    toast('Error al guardar. Revisa la conexión.','err');
+    console.error(e);
+  }
+}
+
+async function cargar(){
+  try{
+    const resp=await fetch(`${URL}?action=load`);
+    const json=await resp.json();
+    if(json.ok&&json.data){
+      const saved=JSON.parse(json.data);
+      SEDES.forEach((_,i)=>renderPanel(i,saved[i]||null));
+      sync('Actualizado · '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),'ok');
+      toast('✓ Datos cargados');
+    } else {
+      SEDES.forEach((_,i)=>renderPanel(i,null));
+      sync('Listo','ok');
+    }
+  }catch(e){
+    SEDES.forEach((_,i)=>renderPanel(i,null));
+    sync('Sin conexión','err');
+    toast('No se pudo conectar.','err');
+  } finally {
+    document.getElementById('overlay').classList.add('hidden');
+    document.getElementById('btn-save').disabled=false;
+  }
+}
+
+function switchTab(idx){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+  activeTab=idx;
+}
+
+window.addEventListener('beforeunload',e=>{ if(pendiente){e.preventDefault();e.returnValue='';} });
+cargar();
+</script>
+</body>
+</html>
